@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Võ Lâm 2D · HNB Remote Loader
 // @namespace    https://lemoncode.ai/volam2d
-// @version      1.7.1
+// @version      1.7.2
 // @description  Tự động tải & chạy các file .js trong thư mục hnb của GitHub. Tự chống cài trùng (1 badge duy nhất). Luôn cập nhật danh sách mới (file thêm/xoá trên repo có hiệu lực ngay lần tải trang sau). Bảng "Script" kéo được, bật/tắt từng script. Xoá file trên repo = script ngừng chạy; thêm file = tự chạy khi tải lại trang.
 // @author       Lemon Code
 // @match        https://volam2d.com/*
@@ -46,6 +46,10 @@
   const REPO = 'volam2dscrip';
   const BRANCH = 'main';
   const DIR = 'hnb';
+
+  // Loader nằm trong chính hnb/ (boot tải về) -> phải bỏ khỏi danh sách,
+  // nếu không nó tự chạy lại và badge hiện "3/3" thay vì "2/2".
+  const SELF_FILES = ['loader.js'];
 
   const FALLBACK_FILES = [
     // 'vi-du-script.js',
@@ -95,7 +99,10 @@
           throw new Error(msg + ' (repo private? hết quota 60/h?)');
         }
         const files = arr
-          .filter(function (f) { return f.type === 'file' && /\.js$/i.test(f.name); })
+          .filter(function (f) {
+            return f.type === 'file' && /\.js$/i.test(f.name) &&
+              SELF_FILES.indexOf(f.name) < 0;
+          })
           .sort(function (a, b) { return a.name.localeCompare(b.name); })
           .map(function (f) {
             return {
