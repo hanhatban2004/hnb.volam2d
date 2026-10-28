@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "platforms": ["android", "web"],
+  "announcementId": "2026-10-28-01",
+  "announcementText": "Đã có script mới. Mở bảng Script → bấm \"+ Tải lại\".",
+  "announcementBgColor": "#1b2233",
+  "announcementTextColor": "#ffffff",
+  "maintenanceMode": false,
+  "maintenanceText": "Đang bảo trì, vui lòng quay lại sau ít phút."
+}
