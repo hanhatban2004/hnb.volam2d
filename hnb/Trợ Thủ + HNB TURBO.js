@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Võ Lâm Pixel – Trọn bộ (Giao diện mới + Trợ thủ + Chibi + HNB Turbo)
 // @namespace    volam2d-tron-bo
-// @version      2.9.0
-// @description  Gộp 1 script: giao diện kính mờ hiện đại, Trợ thủ tự động (hồi sinh, nhiệm vụ, đập đồ, thú cưỡi), bảng Nhân vật 4 tab, ngoại hình Chibi, HNB Turbo giảm lag (FPS, độ phân giải, hiệu ứng, FPS/Ping). [2.1.0] Đi tới mọi bản đồ (đường nhiều chặng) + tự dùng Xa Phu; bảng Xa Phu của game được thay bằng bảng riêng đủ mọi map, tự cập nhật khi có map mới. [2.1.1] Bấm map là bay ngay: uỷ nhiệm sự kiện (game vẽ lại vẫn ăn) + bấm được cả dòng + báo rõ khi máy chủ không đổi map. [2.2.0] Chỉ gửi teleport khi Xa Phu thật sự có tuyến (lấy từ chính máy chủ); map không có tuyến thì tự đi bộ + hiện nút "🚶 đi bộ"; máy chủ từ chối thì in nguyên văn lý do. [2.3.0] Nhiệm vụ cốt truyện chạy chắc hơn (tự bấm "Bỏ qua" hội thoại, tự đặt lại đường đi tới NPC, tự nhích khi kẹt vật cản, không đứng im ở bước mua đồ/mặc đồ); THÊM tab tự đánh PHÓ BẢN (tự tìm Phó Bản Sứ Giả, chọn phó bản còn lượt vừa cấp, vào đánh từng đợt bằng Tự động đánh, xong thì ra vào tiếp) và tự LÀM nhiệm vụ hằng ngày (không chỉ nhận thưởng). [2.3.1] Đúng nguyên tắc "phải bật mới chạy": tự LÀM nhiệm vụ hằng ngày mặc định TẮT, script KHÔNG tự bật "Tự động đánh" nữa (có ô cho phép riêng, mặc định TẮT; chỉ tắt lại đúng cái nó đã bật); không vào phó bản khi chưa có cách đánh, tự ra nếu phó bản đứng im 90 giây, phó bản thất bại thì đổi cái khác, ưu tiên phó bản của nhiệm vụ ngày, không hành động khi đang chết. [2.3.2] Sửa nút Dừng: bấm là tắt HẾT (nhiệm vụ cốt truyện, phó bản, tự làm nhiệm vụ hằng ngày, tự nhận thưởng, hồi sinh, đập đồ, thú cưỡi), buông đường đi/Xa Phu đang chờ, trả lại công tắc "Tự động đánh" nếu chính script đã bật; tách "Nhiệm vụ hằng ngày" thành ô riêng có nút bật/tắt và dòng trạng thái mục tiêu. [2.4.0] Thêm ô riêng "Nhiệm vụ môn phái" (mặc định TẮT): tự về môn phái bằng Xa Phu, tới Trưởng Môn nhận/trả nhiệm vụ, đi đúng bản đồ diệt quái · hạ quái tinh anh · đưa thư, lặp tới khi hết lượt ngày; nhớ NPC Trưởng Môn để lần sau đi thẳng; sai môn phái thì tự tắt và báo; nhường đường cho "Tự làm nhiệm vụ"/phó bản; không tự bật "Tự động đánh" ngoài ô cho phép. [2.5.0] Tự đánh bằng chiêu của nhân vật, KHÔNG bật "Tự động đánh": tự chọn đúng quái mà nhiệm vụ (môn phái / hằng ngày) ghi tên, tự đi tới bằng chase, tự bấm chiêu mạnh nhất đang sẵn sàng đủ tầm đủ MP (hết MP thì đánh thường, chỉ buff thì báo không có chiêu đánh), chống spam 100ms/chiêu; bỏ hẳn việc script tự bật Tự động đánh cho nhiệm vụ môn phái và nhiệm vụ hằng ngày. [2.6.0] AL cho nhiệm vụ môn phái: không còn đứng im — chưa biết Trưởng Môn ở đâu thì tự đi qua các bản đồ môn phái (gamedata maps[].sect), gặp phái khác thì bỏ bản đồ đó đi tiếp, nhớ NPC + bản đồ khi đúng phái; bản đồ hiện tại không có quái nhiệm vụ thì tự sang bản đồ có quái (maps[].mons, gần cấp nhất); "đưa thư" tự đọc tên người nhận + bản đồ trong nội dung; hỏi NPC tối đa 3 lần/30 giây. [2.7.0] THÊM ô riêng "Áp tiêu tự động" (mặc định TẮT): tự tìm Long Môn Tiêu Cục (nhớ NPC, chưa biết thì dò 5 thành trấn), nhận tuyến vừa cấp + đủ tiền cọc (chọn Tự chọn/Đồng/Bạc/Vàng), giữ xe tiêu sát bên, đi qua cổng theo lộ trình máy chủ (es.next) tới Phân Đà Tiêu Cục giao tiêu; xe tụt lại thì đợi, xe ở bản đồ khác thì quay lại đón, quái đánh xe thì tự bấm chiêu bảo vệ (không bật "Tự động đánh"); nhường đường cho "Tự làm nhiệm vụ"/phó bản, bấm Dừng là dừng cả áp tiêu. [2.8.0] THÊM "BỘ NÃO AI" dùng chung cho MỌI auto (ô riêng, mặc định BẬT): theo dõi bản đồ + ô đứng + trạng thái để biết auto nào đứng yên quá 9 giây, rồi tự chữa theo thang (nhích thử → xoá đường cũ tính lại → tạm tránh bản đồ đang kẹt 45 giây và đi đường vòng → thôi can thiệp 30 giây); watchdog riêng cho lúc đi bộ (đặt đường mà 2,6 giây không nhúc nhích) và lúc chase của game bị kẹt; một người lái duy nhất (nhiệm vụ > phó bản > áp tiêu > môn phái > hằng ngày) nên các auto không giành đường đi của nhau; không can thiệp khi bạn tự đi/đang đánh hoặc khi không bật auto nào; bấm Dừng thì AI cũng đặt lại. [2.9.0] Bảng Xa Phu chỉ hiện ĐÚNG các tuyến mà Xa Phu đang có (danh sách máy chủ gửi khi mở NPC) — bỏ hết map tự thêm/suy đoán khỏi bảng NPC; và chỉ thay bảng khi NPC đang mở đúng là Xa Phu (trước đây mở thợ rèn/tạp hoá sau khi ghé Xa Phu cũng bị dán bảng bản đồ). Muốn đi bộ tới map không có tuyến thì dùng bảng 🧭 Dịch chuyển nhanh (vẫn đủ map).
+// @version      2.10.0
+// @description  Gộp 1 script: giao diện kính mờ hiện đại, Trợ thủ tự động (hồi sinh, nhiệm vụ, đập đồ, thú cưỡi), bảng Nhân vật 4 tab, ngoại hình Chibi, HNB Turbo giảm lag (FPS, độ phân giải, hiệu ứng, FPS/Ping). [2.1.0] Đi tới mọi bản đồ (đường nhiều chặng) + tự dùng Xa Phu; bảng Xa Phu của game được thay bằng bảng riêng đủ mọi map, tự cập nhật khi có map mới. [2.1.1] Bấm map là bay ngay: uỷ nhiệm sự kiện (game vẽ lại vẫn ăn) + bấm được cả dòng + báo rõ khi máy chủ không đổi map. [2.2.0] Chỉ gửi teleport khi Xa Phu thật sự có tuyến (lấy từ chính máy chủ); map không có tuyến thì tự đi bộ + hiện nút "🚶 đi bộ"; máy chủ từ chối thì in nguyên văn lý do. [2.3.0] Nhiệm vụ cốt truyện chạy chắc hơn (tự bấm "Bỏ qua" hội thoại, tự đặt lại đường đi tới NPC, tự nhích khi kẹt vật cản, không đứng im ở bước mua đồ/mặc đồ); THÊM tab tự đánh PHÓ BẢN (tự tìm Phó Bản Sứ Giả, chọn phó bản còn lượt vừa cấp, vào đánh từng đợt bằng Tự động đánh, xong thì ra vào tiếp) và tự LÀM nhiệm vụ hằng ngày (không chỉ nhận thưởng). [2.3.1] Đúng nguyên tắc "phải bật mới chạy": tự LÀM nhiệm vụ hằng ngày mặc định TẮT, script KHÔNG tự bật "Tự động đánh" nữa (có ô cho phép riêng, mặc định TẮT; chỉ tắt lại đúng cái nó đã bật); không vào phó bản khi chưa có cách đánh, tự ra nếu phó bản đứng im 90 giây, phó bản thất bại thì đổi cái khác, ưu tiên phó bản của nhiệm vụ ngày, không hành động khi đang chết. [2.3.2] Sửa nút Dừng: bấm là tắt HẾT (nhiệm vụ cốt truyện, phó bản, tự làm nhiệm vụ hằng ngày, tự nhận thưởng, hồi sinh, đập đồ, thú cưỡi), buông đường đi/Xa Phu đang chờ, trả lại công tắc "Tự động đánh" nếu chính script đã bật; tách "Nhiệm vụ hằng ngày" thành ô riêng có nút bật/tắt và dòng trạng thái mục tiêu. [2.4.0] Thêm ô riêng "Nhiệm vụ môn phái" (mặc định TẮT): tự về môn phái bằng Xa Phu, tới Trưởng Môn nhận/trả nhiệm vụ, đi đúng bản đồ diệt quái · hạ quái tinh anh · đưa thư, lặp tới khi hết lượt ngày; nhớ NPC Trưởng Môn để lần sau đi thẳng; sai môn phái thì tự tắt và báo; nhường đường cho "Tự làm nhiệm vụ"/phó bản; không tự bật "Tự động đánh" ngoài ô cho phép. [2.5.0] Tự đánh bằng chiêu của nhân vật, KHÔNG bật "Tự động đánh": tự chọn đúng quái mà nhiệm vụ (môn phái / hằng ngày) ghi tên, tự đi tới bằng chase, tự bấm chiêu mạnh nhất đang sẵn sàng đủ tầm đủ MP (hết MP thì đánh thường, chỉ buff thì báo không có chiêu đánh), chống spam 100ms/chiêu; bỏ hẳn việc script tự bật Tự động đánh cho nhiệm vụ môn phái và nhiệm vụ hằng ngày. [2.6.0] AL cho nhiệm vụ môn phái: không còn đứng im — chưa biết Trưởng Môn ở đâu thì tự đi qua các bản đồ môn phái (gamedata maps[].sect), gặp phái khác thì bỏ bản đồ đó đi tiếp, nhớ NPC + bản đồ khi đúng phái; bản đồ hiện tại không có quái nhiệm vụ thì tự sang bản đồ có quái (maps[].mons, gần cấp nhất); "đưa thư" tự đọc tên người nhận + bản đồ trong nội dung; hỏi NPC tối đa 3 lần/30 giây. [2.7.0] THÊM ô riêng "Áp tiêu tự động" (mặc định TẮT): tự tìm Long Môn Tiêu Cục (nhớ NPC, chưa biết thì dò 5 thành trấn), nhận tuyến vừa cấp + đủ tiền cọc (chọn Tự chọn/Đồng/Bạc/Vàng), giữ xe tiêu sát bên, đi qua cổng theo lộ trình máy chủ (es.next) tới Phân Đà Tiêu Cục giao tiêu; xe tụt lại thì đợi, xe ở bản đồ khác thì quay lại đón, quái đánh xe thì tự bấm chiêu bảo vệ (không bật "Tự động đánh"); nhường đường cho "Tự làm nhiệm vụ"/phó bản, bấm Dừng là dừng cả áp tiêu. [2.8.0] THÊM "BỘ NÃO AI" dùng chung cho MỌI auto (ô riêng, mặc định BẬT): theo dõi bản đồ + ô đứng + trạng thái để biết auto nào đứng yên quá 9 giây, rồi tự chữa theo thang (nhích thử → xoá đường cũ tính lại → tạm tránh bản đồ đang kẹt 45 giây và đi đường vòng → thôi can thiệp 30 giây); watchdog riêng cho lúc đi bộ (đặt đường mà 2,6 giây không nhúc nhích) và lúc chase của game bị kẹt; một người lái duy nhất (nhiệm vụ > phó bản > áp tiêu > môn phái > hằng ngày) nên các auto không giành đường đi của nhau; không can thiệp khi bạn tự đi/đang đánh hoặc khi không bật auto nào; bấm Dừng thì AI cũng đặt lại. [2.9.0] Bảng Xa Phu chỉ hiện ĐÚNG các tuyến mà Xa Phu đang có (danh sách máy chủ gửi khi mở NPC) — bỏ hết map tự thêm/suy đoán khỏi bảng NPC; và chỉ thay bảng khi NPC đang mở đúng là Xa Phu (trước đây mở thợ rèn/tạp hoá sau khi ghé Xa Phu cũng bị dán bảng bản đồ). Muốn đi bộ tới map không có tuyến thì dùng bảng 🧭 Dịch chuyển nhanh (vẫn đủ map). [2.10.0] THÊM tab “🎨 Giao diện” trong Cài đặt (phím F10): thanh kéo chỉnh CỠ GIAO DIỆN 60–150% (nút bấm, khung nhân vật, bảng, túi đồ, chat, thông báo — bản đồ/nhân vật trong game không đổi) và CỠ CHỮ 80–150% riêng, có nút chọn nhanh và trả về 100%; cỡ chữ được tính lại từ chính CSS gốc của game nên mọi dòng chữ đều theo, kéo thanh là đổi ngay và được lưu. TỐI ƯU CHO MƯỢT: (1) bỏ getElementById('panel') ở MỌI khung hình — nay nhớ tạm 200ms; (2) dọn mảng hiệu ứng (floats/fx/corpses) theo nhịp 200ms thay vì mỗi frame; (3) gộp MutationObserver chat + thông báo — dọn 1 lần/250ms thay vì mỗi lần DOM đổi; (4) không vẽ HUD/đo lại, không dựng lại nút, không quét bảng khi tab bị ẩn; (5) thanh dọc chức năng quét 900ms/lần thay vì 400ms; (6) đồng hồ FPS chỉ ghi lại DOM khi số liệu thật sự đổi; (7) không dò ping khi tab ẩn.
 // @match        https://volam2d.com/*
 // @match        http://volam2d.com/*
 // @match        https://*.volam2d.com/*
@@ -12,9 +12,10 @@
 // @grant        none
 // ==/UserScript==
 /*!
- * VÕ LÂM PIXEL – TRỘN BỘ 2.5.0
+ * VÕ LÂM PIXEL – TRỘN BỘ 2.10.0
  * Gồm 4 mô-đun chạy độc lập trong cùng một file (mỗi mô-đun có khóa chống chạy trùng):
  *   1) HNB Turbo     – giới hạn FPS, hạ độ phân giải, bớt hiệu ứng, dọn bộ nhớ, đo FPS/Ping.  Cài đặt → tab "⚡ HNB Turbo"
+ *      Giao diện     – CỠ GIAO DIỆN 60–150% và CỠ CHỮ 80–150%.        Cài đặt → tab "🎨 Giao diện" (F10)
  *   2) Giao diện mới – HUD kính mờ, thanh chức năng dọc, bảng Nhân vật 4 tab (Nhân vật · Túi đồ · Võ công · Thú cưỡi)
  *   3) Trợ thủ       – tự hồi sinh, tự làm nhiệm vụ, đập đồ tự động, nâng thú cưỡi tự động
  *   4) Chibi         – đổi ngoại hình nhân vật thành dạng chibi.  Cài đặt → khung "Ngoại hình Chibi"
@@ -24,7 +25,7 @@
  *   - Tự host: chép vào js/ và chèn vào <head> của index.html, ĐẶT TRƯỚC tất cả các thẻ <script> khác:
  *       <script src="js/volam-tron-bo.user.js"></script>
  *
- * Phím tắt:  F6 = bật/tắt đồng hồ FPS · F7 = tab HNB Turbo · F8 = Trợ thủ · F9 = giao diện cũ / mới
+ * Phím tắt:  F6 = bật/tắt đồng hồ FPS · F7 = tab HNB Turbo · F10 = tab Giao diện (cỡ UI, cỡ chữ) · F8 = Trợ thủ · F9 = giao diện cũ / mới
  *            C / I / K / M = các tab của bảng Nhân vật (giữ nguyên của game)
  */
 
@@ -49,7 +50,7 @@
               othersFx: true,  othersAura: true,  othersMount: true,  othersName: true,  pets: true,  weather: true,  ultCrack: true,  flash: true,  bubbles: true,  corpses: true,  ghosts: true,  dmgLite: false }
   };
   const { label: _l, desc: _d, ...MED } = PRESETS.medium;
-  const DEF = Object.assign({ preset: 'medium', hud: true, chatMax: 60, floatMax: 40, fxMax: 160, autoDown: true, panelFps: true, idleFps: true }, MED);
+  const DEF = Object.assign({ preset: 'medium', hud: true, chatMax: 60, floatMax: 40, fxMax: 160, autoDown: true, panelFps: true, idleFps: true, uiScale: 1, fontScale: 1 }, MED);
   let cfg;
   try { cfg = Object.assign({}, DEF, JSON.parse(localStorage.getItem(KEY) || '{}')); delete cfg.label; delete cfg.desc; } catch (e) { cfg = Object.assign({}, DEF); }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(cfg)); } catch (e) { } };
@@ -58,15 +59,25 @@
   const rawRAF = window.requestAnimationFrame.bind(window);
   let lastFire = 0;
   const stats = { fps: 0, frames: 0, t0: performance.now(), ping: -1 };
-  let nextDue = 0, focused = true;
+  let nextDue = 0, focused = true, _trimAt = 0;
   window.addEventListener('blur', () => { focused = false; });
   window.addEventListener('focus', () => { focused = true; });
+  // "bảng đang mở?" nhớ tạm 200ms -> trước đây getElementById('panel') bị gọi ở MỌI khung hình
+  let _pnEl = null, _pnOpen = false, _pnAt = 0;
+  function panelOpen() {
+    const t = performance.now();
+    if (t - _pnAt < 200) return _pnOpen;
+    _pnAt = t;
+    if (!_pnEl || !_pnEl.isConnected) _pnEl = document.getElementById('panel');
+    _pnOpen = !!(_pnEl && !_pnEl.classList.contains('hidden'));
+    return _pnOpen;
+  }
   function effCap() {
     let cap = cfg.fps | 0;
     const G = window.G;
-    if (G && G.inGame) {
+    if (G && G.inGame && !document.hidden) {
       if (cfg.idleFps && !focused) cap = cap ? Math.min(cap, 10) : 10;
-      else if (cfg.panelFps) { const pn = document.getElementById('panel'); if (pn && !pn.classList.contains('hidden')) cap = cap ? Math.min(cap, 24) : 24; }
+      else if (cfg.panelFps && panelOpen()) cap = cap ? Math.min(cap, 24) : 24;
     }
     return cap;
   }
@@ -78,7 +89,7 @@
         if (now < nextDue - 1) { rawRAF(tick); return; }
         nextDue = Math.max(nextDue + interval, now);
       }
-      if (now !== lastFire) { stats.frames++; lastFire = now; trimArrays(); }
+      if (now !== lastFire) { stats.frames++; lastFire = now; if (now - _trimAt > 200) { _trimAt = now; trimArrays(); } }
       cb(now);
     });
   };
@@ -155,16 +166,24 @@
   }
 
   // ===================== 5. TỐI ƯU DOM =====================
+  let _chatLog = null;
   function trimChat() {
-    const log = document.getElementById('chat-log'); if (!log) return;
+    const log = _chatLog && _chatLog.isConnected ? _chatLog : (_chatLog = document.getElementById('chat-log'));
+    if (!log) return;
     const max = cfg.chatMax | 0 || 60;
     while (log.children.length > max) log.firstChild.remove();
   }
+  let _chatT = 0, _toastT = 0;
+  // chat nhảy chữ rất nhiều -> chỉ dọn 1 lần / 250ms thay vì mỗi lần DOM đổi
+  function trimChatSoon() { if (_chatT) return; _chatT = setTimeout(() => { _chatT = 0; trimChat(); }, 250); }
   function watchDom() {
     const log = document.getElementById('chat-log');
-    if (log) new MutationObserver(trimChat).observe(log, { childList: true });
+    if (log) new MutationObserver(trimChatSoon).observe(log, { childList: true });
     const toasts = document.getElementById('toasts');
-    if (toasts) new MutationObserver(() => { while (toasts.children.length > 4) toasts.firstChild.remove(); }).observe(toasts, { childList: true });
+    if (toasts) new MutationObserver(() => {
+      if (_toastT) return;
+      _toastT = setTimeout(() => { _toastT = 0; while (toasts.children.length > 4) toasts.firstChild.remove(); }, 250);
+    }).observe(toasts, { childList: true });
   }
 
   // ===================== 6. ĐO FPS / PING =====================
@@ -172,6 +191,7 @@
     const now = performance.now();
     stats.fps = Math.round(stats.frames * 1000 / (now - stats.t0));
     stats.frames = 0; stats.t0 = now;
+    if (document.hidden || !document.body) return;      // tab bị ẩn: không cần vẽ gì
     autoDown();
     renderHud();
     const lv = document.getElementById('hnbt-live'); if (lv) lv.textContent = stats.fps + ' · ' + (stats.ping < 0 ? '–' : stats.ping + ' ms');
@@ -181,7 +201,7 @@
   function autoDown() {
     const G = window.G;
     if (!cfg.autoDown || !G || !G.inGame || document.hidden || !focused) { lagCount = 0; return; }
-    const pn = document.getElementById('panel'); if (pn && !pn.classList.contains('hidden')) { lagCount = 0; return; }
+    if (panelOpen()) { lagCount = 0; return; }
     const target = (cfg.fps | 0) || 60;
     if (stats.fps > 0 && stats.fps < target * 0.7) lagCount++; else lagCount = 0;
     if (lagCount < 6) return;
@@ -197,7 +217,8 @@
     try { window.UI && UI.toast && UI.toast('⚡ HNB Turbo: máy đang giật, tự giảm ' + msg, 'info'); } catch (e) { }
   }
   async function pingLoop() {
-    if (cfg.hud && !document.hidden) {
+    if (document.hidden) { setTimeout(pingLoop, 15000); return; }
+    if (cfg.hud) {
       const t = performance.now();
       try { await fetch('/manifest.json?p=' + Date.now(), { method: 'HEAD', cache: 'no-store' }); stats.ping = Math.round(performance.now() - t); }
       catch (e) { stats.ping = -1; }
@@ -227,6 +248,17 @@ html.mui #hnbt-hud { background: rgba(10,16,28,.72); border-color: rgba(255,255,
 .hnbt-seg > span { min-width: 110px; }
 .hnbt-opt label { display: block; margin: 5px 0; }
 .hnbt-opt label small { opacity: .65; margin-left: 4px; }
+/* ---------- cỡ giao diện & cỡ chữ (tab 🎨 Giao diện) ---------- */
+html { --vlu-ui: 1; --vlu-fs: 1; }
+html:not(.vlu-off) #hud, html:not(.vlu-off) #panel, html:not(.vlu-off) #dead-overlay, html:not(.vlu-off) #modal-msg,
+html:not(.vlu-off) #announce, html:not(.vlu-off) #pin-ticker { zoom: var(--vlu-ui); }
+html.vlu-nozoom:not(.vlu-off) #hud, html.vlu-nozoom:not(.vlu-off) #panel,
+html.vlu-nozoom:not(.vlu-off) #dead-overlay, html.vlu-nozoom:not(.vlu-off) #modal-msg {
+  zoom: 1 !important; width: auto !important; height: auto !important;
+  transform: scale(var(--vlu-ui)); transform-origin: top left; inset: 0; }
+.vlu-row { display: flex; align-items: center; gap: 10px; margin: 8px 0 4px; }
+.vlu-row input[type=range] { flex: 1 1 auto; height: 26px; accent-color: #6ab0e8; min-width: 90px; }
+.vlu-row b.vlu-val { min-width: 54px; text-align: right; font-variant-numeric: tabular-nums; }
 `;
   function applyClasses() {
     const h = document.documentElement.classList;
@@ -248,7 +280,67 @@ html.mui #hnbt-hud { background: rgba(10,16,28,.72); border-color: rgba(255,255,
     if (anchor) { const r = anchor.getBoundingClientRect(); hudEl.style.left = Math.round(r.right + 10) + 'px'; hudEl.style.top = Math.round(r.top + 4) + 'px'; }
     const f = stats.fps, cls = f >= 50 ? 'ok' : f >= 30 ? 'mid' : 'bad';
     const pc = stats.ping < 0 ? '' : stats.ping < 90 ? 'ok' : stats.ping < 200 ? 'mid' : 'bad';
-    hudEl.innerHTML = `<b class="${cls}">${f}</b><small>FPS</small><i></i><b class="${pc}">${stats.ping < 0 ? '–' : stats.ping}</b><small>ms</small>`;
+    const html = `<b class="${cls}">${f}</b><small>FPS</small><i></i><b class="${pc}">${stats.ping < 0 ? '–' : stats.ping}</b><small>ms</small>`;
+    if (hudEl._h !== html) { hudEl._h = html; hudEl.innerHTML = html; }
+  }
+
+  // ===================== 7b. CỠ GIAO DIỆN & CỠ CHỮ =====================
+  // trình duyệt cũ có zoom nhưng CSS.supports('zoom') lại trả về false -> đo thật cho chắc
+  const ZOOM_OK = (() => {
+    try {
+      const p = document.createElement('div');
+      p.style.cssText = 'position:absolute;left:-9999px;top:0;width:100px;height:10px;zoom:2';
+      (document.documentElement || document.body).appendChild(p);
+      const w = p.getBoundingClientRect().width;
+      p.remove();
+      return w > 150;
+    } catch (e) { return false; }
+  })();
+  function applyUi() {
+    const de = document.documentElement;
+    const k = Math.max(0.6, Math.min(1.5, +cfg.uiScale || 1));
+    const f = Math.max(0.8, Math.min(1.5, +cfg.fontScale || 1));
+    de.style.setProperty('--vlu-ui', String(k));
+    de.style.setProperty('--vlu-fs', String(f));
+    de.classList.toggle('vlu-off', k === 1);
+    de.classList.toggle('vlu-nozoom', !ZOOM_OK);
+    if (f !== 1) buildFontCss();
+  }
+  // Cỡ chữ: quét CSS GỐC của game, mọi dòng khai báo font-size được nhân thêm var(--vlu-fs)
+  let fsEl = null, fsSheets = -1, fsCount = 0;
+  function buildFontCss(force) {
+    const n = document.styleSheets.length;
+    if (fsEl && !force && n === fsSheets) return fsEl;
+    const isNum = v => /^[\d.]+(px|rem|em|%)$/.test(v);
+    const byMedia = new Map();
+    const isGroup = r => !!(r.cssRules && !r.selectorText && !r.style);   // @media / @supports / @layer / @keyframes
+    const condOf = r => r.conditionText || (r.media && r.media.mediaText) || '';
+    const scan = (rules, media) => {
+      for (const r of rules) {
+        if (isGroup(r)) { const c = condOf(r); scan(r.cssRules, c ? (media ? media + ' and ' + c : c) : media); continue; }
+        const sel = r.selectorText; if (!sel || !r.style) continue;
+        const v = (r.style.getPropertyValue('font-size') || '').trim();
+        if (!isNum(v)) continue;
+        let list = byMedia.get(media);
+        if (!list) { list = []; byMedia.set(media, list); }
+        list.push(sel + '{font-size:calc(' + v + ' * var(--vlu-fs,1)) !important}');
+      }
+    };
+    for (const sh of Array.from(document.styleSheets)) {
+      if (sh.ownerNode && sh.ownerNode.id === 'vlu-fs-css') continue;
+      let rs; try { rs = sh.cssRules; } catch (e) { continue; }
+      scan(rs, '');
+    }
+    let out = '';
+    for (const [media, list] of byMedia) out += media ? '@media ' + media + '{' + list.join('') + '}' : list.join('');
+    if (!fsEl) { fsEl = document.createElement('style'); fsEl.id = 'vlu-fs-css'; (document.head || document.documentElement).appendChild(fsEl); }
+    fsEl.textContent = out;
+    fsSheets = n; fsCount = (out.match(/font-size:/g) || []).length;
+    return fsEl;
+  }
+  function nowUiText() {
+    const ui = Math.round((+cfg.uiScale || 1) * 100), fo = Math.round((+cfg.fontScale || 1) * 100);
+    return 'UI ' + ui + '% · chữ ' + fo + '%' + (ZOOM_OK ? '' : ' (trình duyệt không có zoom → dùng cách thay thế)') + (fo === 1 ? '' : ' · cỡ chữ áp cho ' + fsCount + ' dòng CSS gốc');
   }
 
   // ===================== 8. TAB "HNB TURBO" TRONG CÀI ĐẶT =====================
@@ -303,10 +395,31 @@ html.mui #hnbt-hud { background: rgba(10,16,28,.72); border-color: rgba(255,255,
         <p class="small muted">FPS hiện tại: <b id="hnbt-live">${stats.fps} · ${stats.ping < 0 ? '–' : stats.ping + ' ms'}</b> · Độ phân giải thiết bị: ${Math.round(nativeDPR * 100)}% · Thay đổi được lưu tự động. Phím F7 mở nhanh tab này.</p>
       </div>`;
   }
+  function uiHTML() {
+    const ui = Math.round((+cfg.uiScale || 1) * 100), fo = Math.round((+cfg.fontScale || 1) * 100);
+    const bar = (attr, val, min, max) => `<div class="vlu-row"><input type="range" class="vlu-range" data-vlur="${attr}" min="${min}" max="${max}" step="5" value="${val}"><b class="vlu-val">${val}%</b></div>`;
+    return `
+      <div class="card"><h4>🎨 Cỡ giao diện (UI)</h4>
+        <p class="small muted">Phóng to / thu nhỏ nút bấm, khung nhân vật, bảng, túi đồ, chat, thông báo. Bản đồ và nhân vật trong game giữ nguyên.</p>
+        ${bar('uiScale', ui, 60, 150)}
+        <div class="hnbt-seg"><span>Chọn nhanh</span>${[80, 90, 100, 110, 120, 135].map(v => B(ui === v, `data-vlup="${v}"`, v + '%')).join('')}</div>
+      </div>
+      <div class="card"><h4>🔤 Cỡ chữ</h4>
+        <p class="small muted">Chỉ chỉnh chữ (tên, số, chữ trong bảng/túi đồ, chat, thông báo). Cộng thêm lên cỡ UI ở trên.</p>
+        ${bar('fontScale', fo, 80, 150)}
+        <div class="hnbt-seg"><span>Chọn nhanh</span>${[90, 100, 110, 125, 140].map(v => B(fo === v, `data-vluf="${v}"`, v + '%')).join('')}</div>
+      </div>
+      <div class="card">
+        <p class="small muted">Đang áp dụng: <b id="vlu-now">${nowUiText()}</b></p>
+        <div class="hnbt-seg"><span>Trả về gốc</span><button class="btn small" data-vlureset="1">100% cả hai</button><button class="btn small" data-vlufix="1">Dựng lại bảng cỡ chữ</button></div>
+        <p class="small muted">Kéo thanh là thấy đổi ngay. F10 mở nhanh tab này. Cỡ chữ tính lại từ CSS gốc của game nên chữ nào cũng to/nhỏ theo. Thay đổi được lưu tự động.</p>
+      </div>`;
+  }
   function decorateSettings() {
     const body = document.getElementById('panel-body'); if (!body) return;
-    const tabs = `<div class="tabs hnbt-tabs"><button data-hnbtab="game" class="${tab === 'game' ? 'on' : ''}">⚙️ Chung</button><button data-hnbtab="turbo" class="${tab === 'turbo' ? 'on' : ''}">⚡ HNB Turbo</button></div>`;
+    const tabs = `<div class="tabs hnbt-tabs"><button data-hnbtab="game" class="${tab === 'game' ? 'on' : ''}">⚙️ Chung</button><button data-hnbtab="turbo" class="${tab === 'turbo' ? 'on' : ''}">⚡ HNB Turbo</button><button data-hnbtab="ui" class="${tab === 'ui' ? 'on' : ''}">🎨 Giao diện</button></div>`;
     if (tab === 'turbo') body.innerHTML = tabs + turboHTML();
+    else if (tab === 'ui') { if ((+cfg.fontScale || 1) !== 1) buildFontCss(); body.innerHTML = tabs + uiHTML(); }
     else {
       if (!body.querySelector('.hnbt-tabs')) body.insertAdjacentHTML('afterbegin', tabs);
       const row = body.querySelector('.gfx-row');
@@ -329,13 +442,27 @@ html.mui #hnbt-hud { background: rgba(10,16,28,.72); border-color: rgba(255,255,
     UI.openPanel = function (name) { if (name === 'settings' && !UI.__hnbtKeep) tab = 'game'; UI.__hnbtKeep = false; return rawOpen.apply(this, arguments); };
     const body = document.getElementById('panel-body');
     body.addEventListener('click', e => {
-      if (UI.panelName() !== 'settings' || tab !== 'turbo') return;
+      if (UI.panelName() !== 'settings' || (tab !== 'turbo' && tab !== 'ui')) return;
       const t = e.target.closest('button'); if (!t) return;
       const d = t.dataset;
       if (d.hnbpre) { const { label, desc, ...vals } = PRESETS[d.hnbpre]; set(Object.assign(vals, { preset: d.hnbpre }), true); }
       else if (d.hnbfps != null) set({ fps: +d.hnbfps });
       else if (d.hnbsc != null) set({ scale: +d.hnbsc });
       else if (d.hnbfx != null) set({ fx: +d.hnbfx });
+      else if (d.vlup != null) set({ uiScale: +d.vlup / 100 }, true);
+      else if (d.vluf != null) set({ fontScale: +d.vluf / 100 }, true);
+      else if (d.vlureset) set({ uiScale: 1, fontScale: 1 }, true);
+      else if (d.vlufix) { buildFontCss(true); UI.refreshPanel(); }
+    });
+    // kéo thanh %: đổi ngay, KHÔNG dựng lại bảng (giữ nguyên tay đang kéo)
+    body.addEventListener('input', e => {
+      const d = e.target && e.target.dataset; if (!d || !d.vlur) return;
+      if (d.vlur !== 'uiScale' && d.vlur !== 'fontScale') return;
+      cfg[d.vlur] = (+e.target.value) / 100;
+      save(); applyUi();
+      const lbl = e.target.parentNode && e.target.parentNode.querySelector('.vlu-val');
+      if (lbl) lbl.textContent = e.target.value + '%';
+      const now = document.getElementById('vlu-now'); if (now) now.textContent = nowUiText();
     });
     body.addEventListener('change', e => {
       const k = e.target.dataset && e.target.dataset.hnbk; if (!k) return;
@@ -348,10 +475,15 @@ html.mui #hnbt-hud { background: rgba(10,16,28,.72); border-color: rgba(255,255,
     tab = 'turbo'; UI.__hnbtKeep = true;
     if (UI.panelName() === 'settings') UI.refreshPanel(); else UI.openPanel('settings');
   }
+  function openUi() {
+    const UI = window.UI; if (!UI || !window.G || !G.inGame) return;
+    tab = 'ui'; UI.__hnbtKeep = true;
+    if (UI.panelName() === 'settings') UI.refreshPanel(); else UI.openPanel('settings');
+  }
   function set(patch, keepPreset) {
     Object.assign(cfg, patch);
     if (!keepPreset) cfg.preset = 'custom';
-    save(); applyClasses(); applyGame(); renderHud();
+    save(); applyClasses(); applyGame(); applyUi(); renderHud();
     const UI = window.UI;
     if (UI && UI.panelName && UI.panelName() === 'settings') UI.refreshPanel();
   }
@@ -360,20 +492,22 @@ html.mui #hnbt-hud { background: rgba(10,16,28,.72); border-color: rgba(255,255,
   function onReady() {
     const st = document.createElement('style'); st.id = 'hnbt-css'; st.textContent = CSS; document.head.appendChild(st);
     applyClasses();
+    applyUi();
     hudEl = document.createElement('div'); hudEl.id = 'hnbt-hud'; hudEl.title = 'HNB Turbo (F7) · F6: ẩn/hiện';
     hudEl.onclick = openTurbo; document.body.appendChild(hudEl);
     watchDom(); trimChat();
     let n = 0; const iv = setInterval(() => { const a = hookGame.done || (hookGame.done = hookGame()); const b = hookUI(); const c = hookModules.done || (hookModules.done = hookModules()); if ((a && b && c) || ++n > 300) clearInterval(iv); }, 100);
     setInterval(measure, 500); pingLoop();
-    // F7 = tab HNB Turbo · F6 = đồng hồ FPS (F8 dành cho Trợ thủ, F9 cho giao diện cũ/mới)
+    // F7 = tab HNB Turbo · F10 = tab Giao diện · F6 = đồng hồ FPS (F8 Trợ thủ, F9 giao diện cũ/mới)
     window.addEventListener('keydown', e => {
       if (e.code === 'F7') { e.preventDefault(); e.stopImmediatePropagation(); const UI = window.UI; if (UI && UI.panelName && UI.panelName() === 'settings' && tab === 'turbo') UI.closePanel(); else openTurbo(); }
       else if (e.code === 'F6') { e.preventDefault(); e.stopImmediatePropagation(); set({ hud: !cfg.hud }, true); }
+      else if (e.code === 'F10') { e.preventDefault(); e.stopImmediatePropagation(); const UI = window.UI; if (UI && UI.panelName && UI.panelName() === 'settings' && tab === 'ui') UI.closePanel(); else openUi(); }
     }, true);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', onReady); else onReady();
 
-  window.HNBT = { cfg, set, open: openTurbo, stats, PRESETS, get tab() { return tab; } };
+  window.HNBT = { cfg, set, open: openTurbo, openUi, stats, PRESETS, applyUi, fontCss: buildFontCss, uiText: nowUiText, get tab() { return tab; } };
 })();
 
 /* ===================================================================================
@@ -914,7 +1048,7 @@ html.mui body.pvp-on #mui-target { top: 56px; }
     const xp = h('div', '', '<i></i><div class="ticks"></div><span></span>'); xp.id = 'mui-xp'; hud.appendChild(xp);
 
     // --- lớp đỏ khi sắp chết ---
-    const low = h('div'); low.id = 'mui-lowhp'; $('screen-game').insertBefore(low, $('hud'));
+    const low = h('div'); low.id = 'mui-lowhp'; const sg0 = $('screen-game'), hd0 = $('hud'); if (sg0 && hd0) sg0.insertBefore(low, hd0); else hud.appendChild(low);
 
     // --- thanh menu + bảng "Thêm" ---
     const rail = h('div', 'mui-glass'); rail.id = 'mui-rail'; hud.appendChild(rail);
@@ -930,7 +1064,7 @@ html.mui body.pvp-on #mui-target { top: 56px; }
     // thanh menu dựng lại khi game thêm / bớt nút
     const mb = $('menu-buttons');
     if (mb) new MutationObserver(() => { clearTimeout(buildRail._t); buildRail._t = setTimeout(buildRail, 50); }).observe(mb, { childList: true });
-    setInterval(syncRail, 400);
+    setInterval(() => { if (!document.hidden) syncRail(); }, 900);
     document.addEventListener('pointerdown', e => { if (E.more.classList.contains('open') && !E.more.contains(e.target) && !e.target.closest('#mui-rail .mr-more')) E.more.classList.remove('open'); }, true);
   }
 
@@ -980,7 +1114,7 @@ html.mui body.pvp-on #mui-target { top: 56px; }
     syncRail();
   }
   function syncRail() {
-    if (!railItems.length) return;
+    if (!railItems.length || document.hidden) return;
     const open = $('panel') && !$('panel').classList.contains('hidden');
     const cur = open && window.UI && typeof UI.panelName === 'function' ? (() => { try { return UI.panelName(); } catch (e) { return null; } })() : null;
     let anyMoreDot = false;
@@ -3024,11 +3158,13 @@ html.mui body.pvp-on #mui-target { top: 56px; }
       if (G.me && !G.me.dead) RV.lastAuto = !!G.auto;
       watchDead();
       try { hookXa(); hookTp(); hookBox(); hookClick(); hookMsg(); } catch (e) {}
-      try { if (XA.d && window.UI && UI.panelName() === 'npc') xaPaint(); } catch (e) {}   // map mới -> tự vẽ lại
-      try { xaBoxPaint(); } catch (e) {}
+      try { if (!document.hidden && XA.d && window.UI && UI.panelName() === 'npc') xaPaint(); } catch (e) {}   // map mới -> tự vẽ lại
+      try { if (!document.hidden) xaBoxPaint(); } catch (e) {}
       try { xaTick(); } catch (e) {}
-      try { cgMenu(); cgSync(); } catch (e) {}
-      const pn = $('panel'); document.body.classList.toggle('mh-panel', !!pn && !pn.classList.contains('hidden'));
+      if (!document.hidden) {
+        try { cgMenu(); cgSync(); } catch (e) {}
+        const pn = $('panel'); document.body.classList.toggle('mh-panel', !!pn && !pn.classList.contains('hidden'));
+      }
       try { questTick(); } catch (e) { console.warn('[MUI helper] quest', e); }
       try { hookPb(); pbTick(); } catch (e) { console.warn('[MUI helper] dungeon', e); }
       try { hookSect(); sectTick(); } catch (e) { console.warn('[MUI helper] sect', e); }
