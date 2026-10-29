@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Võ Lâm 2D · HNB Remote Loader
 // @namespace    https://lemoncode.ai/volam2d
-// @version      1.7.2
-// @description  Tự động tải & chạy các file .js trong thư mục hnb của GitHub. Tự chống cài trùng (1 badge duy nhất). Luôn cập nhật danh sách mới (file thêm/xoá trên repo có hiệu lực ngay lần tải trang sau). Bảng "Script" kéo được, bật/tắt từng script. Xoá file trên repo = script ngừng chạy; thêm file = tự chạy khi tải lại trang.
+// @version      1.8.0
+// @description  Tự động tải & chạy các file .js trong thư mục hnb của GitHub. Tự chống cài trùng (1 badge duy nhất). Luôn cập nhật danh sách mới (file thêm/xoá trên repo có hiệu lực ngay lần tải trang sau). Bảng "Script" kéo được, bật/tắt từng script. Xoá file trên repo = script ngừng chạy; thêm file = tự chạy khi tải lại trang. [1.8.0] Không bao giờ trắng bảng: GitHub API lỗi (403 hết 60 lượt/giờ, 404 repo private, mất mạng) thì tự lấy danh sách từ jsDelivr, rồi danh sách đã lưu trong máy, rồi FALLBACK_FILES — và hiện rõ lý do ngay trong bảng.
 // @author       Lemon Code
 // @match        https://volam2d.com/*
 // @match        https://*.volam2d.com/*
@@ -13,6 +13,8 @@
 // @grant        none
 // @connect      api.github.com
 // @connect      raw.githubusercontent.com
+// @connect      data.jsdelivr.com
+// @connect      cdn.jsdelivr.net
 // ==/UserScript==
 
 (function () {
@@ -38,9 +40,11 @@
    * DIR   : thư mục chứa các file .js
    * Thứ tự chạy = alphabet của tên file. Muốn ép thứ tự, đặt tiền tố số:
    *   01-core.js, 02-ui.js, 03-hotkeys.js ...
-   * FALLBACK_FILES: dùng khi repo private / API lỗi.
-   *   - Repo PUBLIC  -> để [] , loader tự lấy danh sách từ GitHub.
-   *   - Repo PRIVATE -> liệt kê tay tên file vào đây.
+   * FALLBACK_FILES: chỉ dùng khi CẢ GitHub API lẫn jsDelivr đều không lấy được
+   *   danh sách (hết 60 lượt/giờ, mất mạng...). Repo PUBLIC -> để [].
+   *   - Lưu ý: repo PRIVATE thì liệt kê tên vào đây CŨNG KHÔNG chạy được, vì
+   *     raw.githubusercontent.com và cdn.jsdelivr.net đều không đọc được repo private.
+   *     Lúc đó cần token (không an toàn khi nhúng vào app) hoặc để repo public + mã hoá file.
    * ============================================== */
   const OWNER = 'hanhatban2004';
   const REPO = 'volam2dscrip';
@@ -60,7 +64,15 @@
   // Android nhiều máy có thể dùng chung IP nhà mạng, nên giữ 60 giây để không bị 403.
   // Nút "+ Tải lại" và HNB.reload() luôn bỏ qua cache (force = true).
   const CACHE_TTL = 60 * 1000;
+  const STALE_TTL = 6 * 60 * 60 * 1000;   // [1.8.0] cache còn dùng được trong 6 giờ khi GitHub lỗi
   const LOG = '[Script]';
+  const VERSION = '1.8.0';   // hien trong tieu de bang de biet app dang chay ban loader nao
+
+  // [1.8.0] Hai hook dưới đây CHỈ để tự thử nghiệm đường dự phòng, không ảnh hưởng lúc chạy thật.
+  const API_HOST = window.__HNB_API_HOST || 'https://api.github.com';
+  const JSD_HOST = window.__HNB_JSD_HOST || 'https://data.jsdelivr.com';
+  let lastSource = '';   // 'github' | 'jsdelivr' | 'cache' | 'fallback'
+  let lastReason = '';   // lý do khi không lấy được từ GitHub -> hiện thẳng trong bảng
 
   const isGame = /(^|\.)volam2d\.com$/i.test(location.hostname) || /^(localhost|127\.0\.0\.1)$/i.test(location.hostname);
   if (!isGame) return;
@@ -78,9 +90,66 @@
   function fetchText(url, opts) {
     return fetch(url, Object.assign({ cache: 'no-store', credentials: 'omit' }, opts || {}))
       .then(function (r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + url);
+        if (!r.ok) {
+          // [1.8.0] Giữ lại mã lỗi + header để nói rõ vì sao (403 hết lượt, 404 private...).
+          const e = new Error('HTTP ' + r.status + ' ' + url);
+          e.status = r.status;
+          try { e.headers = r.headers; } catch (x) { }
+          throw e;
+        }
         return r.text();
       });
+  }
+
+  // [1.8.0] Dịch lỗi thành câu người dùng hiểu được.
+  function describeErr(err) {
+    const st = err && err.status;
+    if (st === 403) {
+      let left = '';
+      try {
+        const rst = err.headers && err.headers.get('x-ratelimit-reset');
+        const rem = err.headers && err.headers.get('x-ratelimit-remaining');
+        if (rst) left = ' (còn ~' + Math.max(0, Math.round(((+rst) * 1000 - Date.now()) / 60000)) + ' phút nữa là có lượt)';
+        if (rem != null) left = ' (hết ' + rem + '/60 lượt cho IP này' + left + ')';
+      } catch (e) { }
+      return 'HTTP 403 — GitHub chặn vì hết 60 lượt truy cập/giờ' + left;
+    }
+    if (st === 404) return 'HTTP 404 — không thấy thư mục ' + DIR + '/ (repo đang private, sai tên repo/thư mục?)';
+    if (st) return 'HTTP ' + st + ' từ GitHub';
+    return (err && err.message) || 'không rõ lý do (mất mạng?)';
+  }
+
+  function srcLabel() {
+    return lastSource === 'jsdelivr' ? 'jsDelivr (nguồn dự phòng)' :
+      lastSource === 'fallback' ? 'danh sách ghi tay trong loader' :
+        lastSource === 'cache' ? 'danh sách đã lưu trong máy' : (lastSource || 'GitHub');
+  }
+
+  // [1.8.0] Nguồn 2: jsDelivr (máy chủ khác GitHub, không bị giới hạn 60 lượt/giờ).
+  function listFromJsdelivr() {
+    const api = JSD_HOST + '/v1/package/gh/' + OWNER + '/' + REPO + '@' + BRANCH + '/flat';
+    return fetchText(api).then(function (txt) {
+      const arr = JSON.parse(txt);
+      const all = (arr && arr.files) || [];
+      const pre = '/' + DIR + '/';
+      const files = all.filter(function (f) {
+        const n = String((f && f.name) || '');
+        return n.indexOf(pre) === 0 && /\.js$/i.test(n) &&
+          SELF_FILES.indexOf(n.slice(pre.length)) < 0;
+      }).map(function (f) {
+        const nm = String(f.name).slice(pre.length);
+        return {
+          name: nm,
+          sha: 'jsd' + (f.size || 0),
+          size: f.size || 0,
+          url: 'https://cdn.jsdelivr.net/gh/' + OWNER + '/' + REPO + '@' + BRANCH + '/' +
+            DIR + '/' + encodeURIComponent(nm) + '?v=' + (f.size || 0)
+        };
+      });
+      if (!files.length) return null;
+      files.sort(function (a, b) { return a.name.localeCompare(b.name); });
+      return { at: Date.now(), src: 'jsdelivr', files: files, ignored: [] };
+    }).catch(function () { return null; });
   }
 
   function getManifest(force) {
@@ -88,7 +157,7 @@
     const fresh = cached && (Date.now() - cached.at < CACHE_TTL);
     if (!force && fresh && cached.files && cached.files.length) return Promise.resolve(cached);
 
-    const api = 'https://api.github.com/repos/' + OWNER + '/' + REPO +
+    const api = API_HOST + '/repos/' + OWNER + '/' + REPO +
       '/contents/' + encodeURIComponent(DIR) + '?ref=' + encodeURIComponent(BRANCH);
 
     return fetchText(api, { headers: { Accept: 'application/vnd.github+json' } })
@@ -146,34 +215,60 @@
           warn('Bỏ qua file không phải .js trong ' + DIR + '/: ' + ignored.join(', '));
         }
 
-        const out = { at: Date.now(), files: files, ignored: ignored };
+        const out = { at: Date.now(), src: 'github', files: files, ignored: ignored };
+        lastSource = 'github'; lastReason = '';
         writeCache(out);
         log('Danh sách file:', files.map(function (f) { return f.name; }).join(', ') || '(trống)');
         return out;
       })
       .catch(function (err) {
-        warn('Không lấy được danh sách từ GitHub:', err.message);
-        if (cached && cached.files && cached.files.length) {
+        lastReason = describeErr(err);
+        warn('Không lấy được danh sách từ GitHub:', lastReason);
+        /* [1.8.0] Thứ tự dự phòng để KHÔNG BAO GIỜ trắng bảng:
+         *   1. jsDelivr       (máy chủ khác, sống khi GitHub bị chặn/hết lượt)
+         *   2. cache cũ còn mới (< 6 giờ)
+         *   3. cache cũ (dù đã quá 6 giờ)
+         *   4. FALLBACK_FILES (do người dùng ghi tay)
+         *   5. không còn gì -> báo lỗi kèm LÝ DO ra bảng, không im lặng. */
+        const hasCache = !!(cached && cached.files && cached.files.length);
+        if (hasCache && (Date.now() - cached.at) < STALE_TTL) {
           warn('Dùng danh sách cache cũ (' + cached.files.length + ' file).');
+          lastSource = cached.src || 'cache';
           return cached;
         }
-        if (FALLBACK_FILES.length) {
-          warn('Dùng FALLBACK_FILES (' + FALLBACK_FILES.length + ' file).');
-          return {
-            at: Date.now(),
-            files: FALLBACK_FILES.map(function (name) {
-              return {
-                name: name,
-                sha: 'fallback',
-                size: 0,
-                url: 'https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/' +
-                  BRANCH + '/' + DIR + '/' + encodeURIComponent(name) +
-                  '?v=' + Date.now()
-              };
-            })
-          };
-        }
-        throw err;
+        return listFromJsdelivr().then(function (man) {
+          if (man) {
+            lastSource = 'jsdelivr';
+            warn('Lấy danh sách từ jsDelivr (' + man.files.length + ' file) — file mới up có thể chậm hơn GitHub vài giờ.');
+            writeCache(man);
+            return man;
+          }
+          if (hasCache) {
+            warn('Dùng danh sách cache cũ đã quá 6 giờ (' + cached.files.length + ' file).');
+            lastSource = cached.src || 'cache';
+            return cached;
+          }
+          if (FALLBACK_FILES.length) {
+            warn('Dùng FALLBACK_FILES (' + FALLBACK_FILES.length + ' file).');
+            lastSource = 'fallback';
+            return {
+              at: Date.now(),
+              src: 'fallback',
+              files: FALLBACK_FILES.map(function (name) {
+                return {
+                  name: name,
+                  sha: 'fallback',
+                  size: 0,
+                  url: 'https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/' +
+                    BRANCH + '/' + DIR + '/' + encodeURIComponent(name) +
+                    '?v=' + Date.now()
+                };
+              })
+            };
+          }
+          lastSource = 'none';
+          throw err;   // không nguồn nào -> runAll báo lỗi, panel hiện lastReason
+        });
       });
   }
 
@@ -388,6 +483,7 @@
       '.vl-hnb-head{display:flex;align-items:center;gap:8px;padding:14px 16px 10px;cursor:move;touch-action:none;user-select:none}',
       '.vl-hnb-head button{cursor:pointer;touch-action:auto}',
       '.vl-hnb-title{font-size:17px;font-weight:700;letter-spacing:.2px}',
+      '.vl-hnb-ver{font-size:11px;opacity:.55;margin-left:6px;align-self:center}',
       '.vl-hnb-count{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#2a2f42;color:#c9d3ea;',
       'font:600 11px/20px ui-monospace,Menlo,monospace;text-align:center}',
       '.vl-hnb-x{margin-left:auto;width:26px;height:26px;border:0;border-radius:7px;background:transparent;color:#8b95ab;',
@@ -456,13 +552,21 @@
     list.innerHTML = '';
 
     if (!files.length) {
-      list.appendChild(el('div', 'vl-hnb-empty', 'Chưa lấy được danh sách file. Bấm "+ Tải lại" để thử lại.'));
+      list.appendChild(el('div', 'vl-hnb-empty',
+        '⚠ Chưa lấy được danh sách file: ' + (lastReason || 'chưa rõ lý do') +
+        ' · Bấm "+ Tải lại" để thử lại (nếu 403: chờ hết giờ là có lượt).'));
       return;
     }
 
     if (lastIgnored.length) {
       list.appendChild(el('div', 'vl-hnb-empty',
         '⚠ Bỏ qua trong ' + DIR + '/ (không phải .js): ' + lastIgnored.join(', ')));
+    }
+
+    if (lastSource && lastSource !== 'github') {
+      list.appendChild(el('div', 'vl-hnb-empty',
+        '⚠ Danh sách lấy từ ' + srcLabel() + (lastReason ? ' — GitHub: ' + lastReason : '') +
+        ' · Bấm "+ Tải lại" để thử lấy lại từ GitHub.'));
     }
 
     files.forEach(function (f) {
@@ -548,6 +652,7 @@
 
     const head = el('div', 'vl-hnb-head');
     head.appendChild(el('span', 'vl-hnb-title', 'Script của tôi'));
+    head.appendChild(el('span', 'vl-hnb-ver', 'v' + VERSION));
     head.appendChild(el('span', 'vl-hnb-count', '0'));
     const x = el('button', 'vl-hnb-x', '✕');
     x.title = 'Đóng (Esc)';
@@ -627,6 +732,12 @@
   // API cho console
   window.HNB = {
     reload: function () { errors.length = 0; return runAll(true); },
+    status: function () {
+      return {
+        source: lastSource, reason: lastReason,
+        files: (readCache() || {}).files || [], errors: errors.slice()
+      };
+    },
     list: function () { return (readCache() || {}).files || []; },
     errors: errors,
     clearCache: function () {
