@@ -2,7 +2,7 @@
 // @name         Võ Lâm Auto 3 - Member
 // @namespace    vlpx.auto3.member
 // @version      3.13.0
-// @description  Bản Member: Tàn Sát (tự đổi khu ít người / tránh Đồ sát, giữ map up) + Tự nhặt đồ với AI nhặt an toàn (tự tính độ nguy hiểm theo máu và số quái quanh người, chỉ nhặt khi an toàn) + lọc phẩm chất + tự bán đồ rác theo phẩm chất + Hồi sinh & tự lên ngựa + Bảo trì & tự đăng nhập + Bảng 48 map & Xa Phu nhanh.
+// @description  Bản Member: Tàn Sát (tự đổi khu ít người / tránh Đồ sát, giữ map up) + Tự nhặt đồ với AI nhặt an toàn (tự tính độ nguy hiểm theo máu và số quái quanh người, chỉ nhặt khi an toàn) + lọc phẩm chất + tự bán đồ rác theo phẩm chất + Hồi sinh & tự lên ngựa + Bảo trì & tự đăng nhập + Bảng 48 map & Xa Phu nhanh. [MENU MỚI 30.10] Toàn bộ menu cũ được làm lại: 8 tab riêng biệt (Tổng quan / Tàn Sát / Đổi khu / Nhặt & Bán / Tổ đội / Bản đồ / Bảo trì / Cài đặt), thanh tab cuộn ngang dạng viên thuốc, tab Tổng quan có công tắc nhanh + nút Bật tất cả / Dừng tất cả, tab Cài đặt có cỡ bảng 80-120% và cỡ chữ 11-16px (4 công tắc chung Xa Phu/Hồi sinh/Lên ngựa Ẩn bảng giờ nằm trong tab Cài đặt). SỬA LỖI LỚN: khai báo PARTY_INV (tự nhận lời mời tổ đội) nằm SAU phần khởi động nên khi tải script bị dừng giữa chừng - đây chính là lý do chức năng tổ đội không bao giờ chạy.
 // @match        https://volam2d.com/*
 // @match        https://*.volam2d.com/*
 // @grant        none
@@ -304,6 +304,7 @@ setTimeout(function () {
   function hookSocket() {
     var g = G();
     if (!g || !g.socket) return;
+    partyBind(g.socket);
     pDmgHook();   // [3.12.0] gắn sự kiện 'dmg' ngay khi có socket, không phụ thuộc ô Tự nhặt
     if (g.socket.__vla3) return;
     g.socket.__vla3 = 1;
@@ -333,6 +334,9 @@ setTimeout(function () {
      Đã bỏ hẳn: tab Boss, Đào khoáng và Tốc độ. */
   var S = Object.assign({ hideTp: true, fast: true, revive: true, mount: true }, load('cfg', {}));
   var F = Object.assign({ on: false, keepUp: false, upMap: null }, load('farm', {}));
+  var PARTY = Object.assign({ on: false }, load('party', {}));
+  function saveParty() { save('party', { on: PARTY.on }); }
+  var PARTY_INV = Object.assign({ on: false, r: 600, cool: 120000, gap: 5000 }, load('partyInv', {}));
   function saveF() { save('farm', { on: F.on, keepUp: F.keepUp, upMap: F.upMap }); }
   function saveS() { save('cfg', { hideTp: S.hideTp, fast: S.fast, revive: S.revive, mount: S.mount }); }
 
@@ -1107,7 +1111,7 @@ setTimeout(function () {
     mAuto();
   }
   /* ============================ 7. GIAO DIỆN MỚI ============================ */
-  var UI3 = { tab: 'farm', x: null, y: null, px: null, py: null, open: false };
+  var UI3 = { tab: 'ov', x: null, y: null, px: null, py: null, open: false, scale: 100, fs: 13, orb: true };
   var STA = { t: 'Sẵn sàng', p: 'Sẵn sàng', m: 'Sẵn sàng', map: '—' };
   var STK = { farm: 't', pick: 'p', maint: 'm', map: 'map', t: 't', p: 'p', m: 'm' };
   function setSt(k, m) {
@@ -1132,12 +1136,12 @@ setTimeout(function () {
     + '#vla3 .h .v{font-size:9.5px;letter-spacing:.08em;padding:2px 6px;border-radius:6px;background:rgba(94,234,212,.14);color:#9df3e2}'
     + '#vla3 .h .x{margin-left:auto;font-style:normal;cursor:pointer;padding:2px 6px;border-radius:8px;color:#8fa6b2}'
     + '#vla3 .h .x:hover{background:rgba(255,255,255,.08);color:#fff}'
-    + '#vla3 .seg{position:relative;display:flex;padding:0 8px;border-bottom:1px solid rgba(255,255,255,.07)}'
-    + '#vla3 .seg button{flex:1;background:none;border:0;color:#7e97a3;padding:8px 0 9px;font:inherit;font-size:10.5px;cursor:pointer;'
-    + 'display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1}'
-    + '#vla3 .seg button.on{color:#5eead4}'
-    + '#vla3 .seg .ind{position:absolute;left:8px;bottom:-1px;width:calc((100% - 16px)/6);height:2px;border-radius:2px;'
-    + 'background:linear-gradient(90deg,#5eead4,#38bdf8);transition:transform .18s ease}'
+    + '#vla3 .seg{display:flex;gap:6px;padding:8px 10px;overflow-x:auto;overflow-y:hidden;border-bottom:1px solid rgba(255,255,255,.07);scrollbar-width:none;-webkit-overflow-scrolling:touch}'
+    + '#vla3 .seg::-webkit-scrollbar{display:none}'
+    + '#vla3 .seg button{flex:0 0 auto;display:flex;align-items:center;gap:5px;padding:6px 11px;border-radius:999px;cursor:pointer;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);color:#7e97a3;font:inherit;font-size:10.5px;white-space:nowrap;line-height:1}'
+    + '#vla3 .seg button b{font-weight:600}'
+    + '#vla3 .seg button.on{background:rgba(94,234,212,.16);border-color:rgba(94,234,212,.5);color:#b9f7ec}'
+    + '#vla3 .seg button:active{transform:scale(.97)}'
     + '#vla3 .h,#vla3 .seg,#vla3 .ft{flex:0 0 auto}'
     + '#vla3 .bd{flex:1 1 auto;min-height:0;max-height:min(62vh,470px);overflow:auto;padding:10px 12px 6px}'
     + '#vla3 .pg{display:none}#vla3 .pg.on{display:block}'
@@ -1192,6 +1196,10 @@ setTimeout(function () {
     + '#vla3 .mini button.g{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.14);color:#9db2bd}'
     + '#vla3 .mini button.on{background:rgba(94,234,212,.28);border-color:rgba(94,234,212,.9);color:#f2fffd;font-weight:700}'   // [3.8.0] nút đang chọn
     + '#vla3 .mini button:active{transform:scale(.97)}'
+    + '#vla3 .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}'
+    + '#vla3 .grid .card{margin:0}'
+    + '#vla3 .sec{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#5f7480;margin:10px 0 6px}'
+    + '#vla3 .mini button.on{background:rgba(94,234,212,.28);border-color:rgba(94,234,212,.9);color:#f2fffd;font-weight:700}'
     + '#vla3-orb{position:fixed;z-index:2147483000;right:14px;bottom:16px;width:52px;height:52px;border-radius:50%;'
     + 'background:radial-gradient(circle at 35% 30%,#164e4a,#0a1a1e);border:1px solid rgba(94,234,212,.45);'
     + 'box-shadow:0 8px 24px rgba(0,0,0,.5),0 0 0 0 rgba(94,234,212,.4);color:#5eead4;font-size:20px;cursor:pointer;'
@@ -1204,11 +1212,22 @@ setTimeout(function () {
   var root = document.createElement('div'); root.id = 'vla3'; root.className = 'hide';
   root.innerHTML = ''
     + '<div class="h" id="vla3-h"><b>VÕ LÂM</b><span class="v">AUTO 3</span><i class="x" data-a="close">✕</i></div>'
-    + '<div class="seg"><button data-t="farm" class="on">⚔<b>Tàn Sát</b></button>'
-    + '<button data-t="pick">🖐<b>Nhặt</b></button>'
+    + '<div class="seg">'
+    + '<button data-t="ov">🏠<b>Tổng quan</b></button>'
+    + '<button data-t="farm">⚔<b>Tàn Sát</b></button>'
+    + '<button data-t="khu">🔀<b>Đổi khu</b></button>'
+    + '<button data-t="pick">🖐<b>Nhặt &amp; Bán</b></button>'
+    + '<button data-t="party">🤝<b>Tổ đội</b></button>'
+    + '<button data-t="map">🗺<b>Bản đồ</b></button>'
     + '<button data-t="maint">🛠<b>Bảo trì</b></button>'
-    + '<button data-t="map">🗺<b>Map</b></button><div class="ind"></div></div>'
+    + '<button data-t="cfg">⚙<b>Cài đặt</b></button>'
+    + '</div>'
     + '<div class="bd">'
+    + ' <div class="pg" data-p="ov">'
+    + '  <div class="mini"><button data-oa="on">▶ Bật tất cả</button><button class="g" data-oa="off">■ Dừng tất cả</button></div>'
+    + '  <div class="grid" id="vla3-ov"></div>'
+    + '  <p class="hint">Tổng quan: trạng thái nhanh + công tắc cho từng chức năng. Kéo thanh tiêu đề để di chuyển bảng; chạm nút tròn ⚔ để ẩn/hiện. Vào tab ⚙ Cài đặt để đổi cỡ bảng / cỡ chữ.</p>'
+    + ' </div>'
     + ' <div class="pg" data-p="farm">'
     + '  <div class="lg"><span class="t1">Tàn Sát</span><button class="sw" data-on="farm" aria-pressed="false"><i></i></button><span class="t2" id="vla3-ft">tắt</span></div>'
     + '  <div class="chs"><button class="ch" data-k="keepUp" aria-pressed="false">📌 Giữ map up</button>'
@@ -1216,6 +1235,8 @@ setTimeout(function () {
     + '  <div class="mini"><button data-a="up">Lưu map này</button><button class="g" data-a="upclear">Bỏ map up</button></div>'
     + '  <div class="card"><div class="k">Map up</div><div class="v" id="vla3-up">—</div></div>'
     + '  <div class="card"><div class="k">Trạng thái</div><div class="v" id="vla3-fs">—</div></div>'
+    + ' </div>'
+    + ' <div class="pg" data-p="khu">'
     + '  <div class="lg" style="margin-top:6px"><span class="t1">🔀 Đổi khu (Tàn Sát)</span><button class="sw" data-on="khu" aria-pressed="false"><i></i></button><span class="t2" id="vla3-kht">tắt</span></div>'
     + '  <div class="chs"><button class="ch" data-kk="few" aria-pressed="false">👥 Khu ít người</button>'
     + '   <button class="ch" data-kk="avoid" aria-pressed="true">☠ Tránh người Đồ sát</button></div>'
@@ -1228,6 +1249,11 @@ setTimeout(function () {
     + '  <div class="card"><div class="k">Khu đang đứng</div><div class="v" id="vla3-khv">—</div></div>'
     + '  <div class="card"><div class="k">Trạng thái đổi khu</div><div class="v" id="vla3-khs">—</div></div>'
     + '  <p class="hint">Đổi khu dùng đúng lệnh của nút «Khu ▾» (socket channel — {ch}). «Khu ít người» chỉ đổi khi khu đang đứng đông hơn khu rảnh nhất từ 2 người và đã hết thời gian nghỉ. «Tránh người Đồ sát» đổi khu NGAY khi có người bật chế độ Đồ sát (pm=2) trong bán kính; khu vừa gặp Đồ sát bị tránh 5 phút. Script không đánh người chơi, chỉ đổi khu; chỉ tự chạy khi Tàn Sát đang bật.</p>'
+    + ' </div>'
+    + ' <div class="pg" data-p="party">'
+    + '  <div class="lg" style="margin-top:6px"><span class="t1">🤝 Tự nhận lời mời tổ đội</span><button class="sw" data-on="partyAccept" aria-pressed="false"><i></i></button><span class="t2" id="vla3-pty">tắt</span></div>'
+    + '  <div class="lg" style="margin-top:6px"><span class="t1">🤝 Tự mời người khác vào đội</span><button class="sw" data-on="partyInvite" aria-pressed="false"><i></i></button><span class="t2" id="vla3-pvi">tắt</span></div>'
+    + '  <p class="hint">Tự mời chỉ chạy khi bạn là đội trưởng và đội chưa đủ 6 người: mời người gần nhất trong 600px, cách 5 giây mỗi lần, mỗi người chờ 2 phút. Bỏ qua người đã chết và người đang Đồ sát.</p>'
     + ' </div>'
     + ' <div class="pg" data-p="pick">'
     + '  <div class="lg"><span class="t1">Tự nhặt</span><button class="sw" data-on="pick" aria-pressed="false"><i></i></button><span class="t2" id="vla3-pt">tắt</span></div>'
@@ -1278,16 +1304,30 @@ setTimeout(function () {
     + '  <div class="card"><div class="k">Trạng thái</div><div class="v" id="vla3-ms">—</div></div>'
     + ' </div>'
     + ' <div class="pg" data-p="map">'
-    + '  <div class="lg"><span class="t1">⚙ Cài đặt chung</span><span class="t2">áp dụng cả game</span></div>'
-    + '  <div class="chs"><button class="ch" data-k="fast" aria-pressed="true">🐎 Xa Phu teleport</button>'
-    + '   <button class="ch" data-k="hideTp" aria-pressed="true">Ẩn bảng Xa Phu</button>'
-    + '   <button class="ch" data-k="revive" aria-pressed="true">Hồi sinh</button>'
-    + '   <button class="ch" data-k="mount" aria-pressed="true">Lên ngựa</button></div>'
     + '  <div class="lg" style="margin-top:6px"><span class="t1">Bản đồ · Xa Phu</span><span class="t2" id="vla3-mapn">—</span></div>'
     + '  <div class="list" id="vla3-maplist"></div>'
     + '  <p class="hint">Danh sách lấy từ dữ liệu game (48 map). ✓ Xa Phu tới được · 🔒 chưa đủ cấp · ✗ server đã từ chối · — không đi bằng Xa Phu.</p>'
     + ' </div>'
     + '</div>'
+    + ' <div class="pg" data-p="cfg">'
+    + '  <div class="sec">Cài đặt chung (áp dụng cả game)</div>'
+    + '  <div class="lg"><span class="t1">⚙ Cài đặt chung</span><span class="t2">áp dụng cả game</span></div>'
+    + '  <div class="chs"><button class="ch" data-k="fast" aria-pressed="true">🐎 Xa Phu teleport</button>'
+    + '   <button class="ch" data-k="hideTp" aria-pressed="true">Ẩn bảng Xa Phu</button>'
+    + '   <button class="ch" data-k="revive" aria-pressed="true">Hồi sinh</button>'
+    + '   <button class="ch" data-k="mount" aria-pressed="true">Lên ngựa</button></div>'
+    + '  <div class="sec">Hiển thị</div>'
+    + '  <div class="lg"><span class="t1">Cỡ bảng</span><span class="t2" id="vla3-uiv">100%</span></div>'
+    + '  <div class="chs"><button class="ch" data-ui="80">80%</button><button class="ch" data-ui="90">90%</button><button class="ch" data-ui="100">100%</button><button class="ch" data-ui="110">110%</button><button class="ch" data-ui="120">120%</button></div>'
+    + '  <div class="lg"><span class="t1">Cỡ chữ</span><span class="t2" id="vla3-fsv">13px</span></div>'
+    + '  <div class="chs"><button class="ch" data-fs="11">11</button><button class="ch" data-fs="12">12</button><button class="ch" data-fs="13">13</button><button class="ch" data-fs="14">14</button><button class="ch" data-fs="15">15</button><button class="ch" data-fs="16">16</button></div>'
+    + '  <div class="lg"><span class="t1">Nút tròn ⚔</span><button class="sw" data-on="orb" aria-pressed="true"><i></i></button></div>'
+    + '  <div class="sec">Vị trí</div>'
+    + '  <div class="mini"><button class="g" data-oa="home">📌 Bảng về góc phải dưới</button><button class="g" data-oa="orbhome">🔄 Đặt lại nút tròn</button></div>'
+    + '  <div class="sec">Thông tin</div>'
+    + '  <div class="card"><div class="k">Giao diện hiện tại</div><div class="v" id="vla3-cfgs">—</div></div>'
+    + '  <p class="hint">Cỡ bảng dùng zoom của trình duyệt (Chrome / Android WebView). Nếu chữ bị mờ thì hạ về 100%. Cỡ chữ chỉ ảnh hưởng bảng, không ảnh hưởng game.</p>'
+    + ' </div>'
     + '<div class="ft"><span class="dot" id="vla3-dot"></span><span id="vla3-st">Sẵn sàng</span></div>';
   var orb = document.createElement('div');
   orb.id = 'vla3-orb'; orb.innerHTML = '⚔<i></i>'; orb.title = 'Võ Lâm Auto 3';
@@ -1299,10 +1339,11 @@ setTimeout(function () {
     root.querySelectorAll('.seg button').forEach(function (b, i) {
       var on = b.getAttribute('data-t') === tab;
       b.classList.toggle('on', on);
-      if (on) q('.seg .ind').style.transform = 'translateX(' + (i * 100) + '%)';
+      if (on) { try { b.scrollIntoView({ block: 'nearest', inline: 'center' }); } catch (e) {} }
     });
     root.querySelectorAll('.pg').forEach(function (p) { p.classList.toggle('on', p.getAttribute('data-p') === tab); });
     paintSt();
+    if (tab === 'ov') { if (typeof ovRender === 'function') ovRender(); }
     if (typeof clampPanel === 'function') clampPanel();
   }
   function paintSt() {
@@ -1333,14 +1374,95 @@ setTimeout(function () {
     var list = sellList(), total = list.reduce(function (a, s) { return a + sellPrice(s); }, 0);
     el.textContent = (list.length ? (list.length + ' món · ~' + total + ' lượng') : 'Không có món rác') + ' · túi ' + g.me.inv.length + '/' + (g.me.invMax || 48);
   }
+
+  /* ---------- 7b. MENU MOI: CAI DAT GIAO DIEN + TONG QUAN ---------- */
+  var _uiSig = '';
+  function uiCfgSave() { save('ui2', UI3); }
+  function applyUiCfg() {
+    var sc = Math.max(70, Math.min(140, Math.round(Number(UI3.scale) || 100)));
+    var fsz = Math.max(10, Math.min(16, Math.round(Number(UI3.fs) || 13)));
+    var sig = sc + '/' + fsz + '/' + (UI3.orb === false ? 0 : 1);
+    if (sig === _uiSig) return;
+    _uiSig = sig;
+    try { root.style.zoom = sc / 100; } catch (e) {}
+    root.style.fontSize = fsz + 'px';
+    var o = document.getElementById('vla3-orb');
+    if (o) {
+      try { o.style.zoom = sc / 100; } catch (e) {}
+      o.style.display = UI3.orb === false ? 'none' : 'flex';
+    }
+    var s = document.getElementById('vla3-cfgs');
+    if (s) s.textContent = 'bảng ' + sc + '% · chữ ' + fsz + 'px · nút tròn ' + (UI3.orb === false ? 'ẩn' : 'hiện');
+  }
+  function uiCfgPaint() {
+    root.querySelectorAll('[data-ui]').forEach(function (b) {
+      var act = Math.round(Number(UI3.scale) || 100) === Number(b.getAttribute('data-ui'));
+      b.classList.toggle('on', act); b.setAttribute('aria-pressed', act ? 'true' : 'false');
+    });
+    root.querySelectorAll('[data-fs]').forEach(function (b) {
+      var act = Math.round(Number(UI3.fs) || 13) === Number(b.getAttribute('data-fs'));
+      b.classList.toggle('on', act); b.setAttribute('aria-pressed', act ? 'true' : 'false');
+    });
+    var uv = document.getElementById('vla3-uiv'); if (uv) uv.textContent = Math.round(Number(UI3.scale) || 100) + '%';
+    var fv = document.getElementById('vla3-fsv'); if (fv) fv.textContent = Math.round(Number(UI3.fs) || 13) + 'px';
+    applyUiCfg();
+  }
+  var OV_ROWS = [
+    ['🏠 Nhân vật', null, 'vla3-ov-1'],
+    ['🗺 Bản đồ', null, 'vla3-ov-2'],
+    ['⚔ Tàn Sát', 'farm', 'vla3-ov-3'],
+    ['🖐 Tự nhặt', 'pick', 'vla3-ov-4'],
+    ['🧹 Bán rác', 'sell', 'vla3-ov-5'],
+    ['🔀 Đổi khu', 'khu', 'vla3-ov-6'],
+    ['🤝 Tổ đội', 'partyAccept', 'vla3-ov-7'],
+    ['🛠 Bảo trì', 'maint', 'vla3-ov-8']
+  ];
+  function ovBuild() {
+    var box = document.getElementById('vla3-ov');
+    if (!box || box.getAttribute('data-built') === '1') return;
+    box.setAttribute('data-built', '1');
+    box.innerHTML = OV_ROWS.map(function (r) {
+      return '<div class="card"><div class="lg" style="margin:0"><span class="t1">' + esc(r[0]) + '</span>'
+        + (r[1] ? '<button class="sw" style="margin-left:auto" data-on="' + r[1] + '" aria-pressed="false"><i></i></button>' : '')
+        + '</div><div class="v" id="' + r[2] + '">—</div></div>';
+    }).join('');
+  }
+  function ovRender() {
+    ovBuild();
+    var set = function (id, v) {
+      var e = document.getElementById(id);
+      if (!e) return;
+      var s = String(v == null ? '' : v);
+      if (e.textContent !== s) e.textContent = s;
+    };
+    var g = G();
+    set('vla3-ov-1', g && g.me ? ((g.me.name || '?') + ' · Lv ' + (g.me.level || '?')) : 'chưa vào game');
+    set('vla3-ov-2', g && g.map ? mapName(g.map.id) : '—');
+    set('vla3-ov-3', STA.t);
+    set('vla3-ov-4', STA.p);
+    set('vla3-ov-5', (Number(Q.bagFull) || 90) + '% túi');
+    set('vla3-ov-6', KS.msg);
+    set('vla3-ov-7', PARTY.on ? ('nhận lời mời' + (PARTY_INV.on ? ' · tự mời' : '')) : 'tắt');
+    set('vla3-ov-8', STA.m);
+  }
+  function allSet(on) {
+    F.on = on; P.on = on; Q.on = on; KU.on = on; PARTY.on = on; PARTY_INV.on = on; T.farm = newTrip('Tàn Sát');
+    if (!on) { M.on = false; if (mTimer) { clearTimeout(mTimer); mTimer = 0; } }
+    saveF(); saveP(); saveQ(); saveKU(); saveParty(); savePartyInv(); save('ui2', UI3);
+    setSt('t', on ? '▶ đã bật tất cả chức năng' : '■ đã dừng tất cả');
+  }
+  function tabExists(t) { return !!root.querySelector('.seg button[data-t="' + t + '"]'); }
+
   function syncUI() {
     paintQ();
     var ft = document.getElementById('vla3-ft'); if (ft) ft.textContent = F.on ? 'bật' : 'tắt';
+    var pty = document.getElementById('vla3-pty'); if (pty) pty.textContent = PARTY.on ? 'bật' : 'tắt';
+    var pvi = document.getElementById('vla3-pvi'); if (pvi) pvi.textContent = PARTY_INV.on ? 'bật' : 'tắt';
     var pt = document.getElementById('vla3-pt'); if (pt) pt.textContent = P.on ? 'bật' : 'tắt';
     var mt2 = document.getElementById('vla3-mt'); if (mt2) mt2.textContent = M.on ? 'bật' : 'tắt';
     root.querySelectorAll('[data-on]').forEach(function (b) {
       var k = b.getAttribute('data-on');
-      sw(b, k === 'farm' ? F.on : k === 'pick' ? P.on : k === 'sell' ? Q.on : k === 'maint' ? M.on : k === 'khu' ? KU.on : false);
+      sw(b, k === 'farm' ? F.on : k === 'pick' ? P.on : k === 'sell' ? Q.on : k === 'maint' ? M.on : k === 'khu' ? KU.on : k === 'partyAccept' ? PARTY.on : k === 'partyInvite' ? PARTY_INV.on : k === 'orb' ? UI3.orb !== false : false);
     });
     // [3.10.0] đổi khu (tab Tàn Sát)
     root.querySelectorAll('[data-kk]').forEach(function (b) {
@@ -1398,6 +1520,8 @@ setTimeout(function () {
     var fs = document.getElementById('vla3-fs'); if (fs) fs.textContent = STA.t;
     var ps = document.getElementById('vla3-ps'); if (ps) ps.textContent = STA.p;
     var ms = document.getElementById('vla3-ms'); if (ms) ms.textContent = STA.m;
+    if (UI3.tab === 'ov') ovRender();
+    uiCfgPaint();
     paintSt();
   }
   function uiMaps() {
@@ -1476,7 +1600,10 @@ setTimeout(function () {
       if (kk === 'khu') { KU.on = !KU.on; KS.list = []; KS.reqAt = -1e9; KS.coolUntil = 0; KS.swapWhy = ''; KS.map = ''; }   // [3.10.0] đổi khu   // [3.9.0] tăng tốc độ   // [3.7.0] đào khoáng
       if (kk === 'sell') Q.on = !Q.on;
       if (kk === 'maint') { M.on = !M.on; if (!M.on && mTimer) { clearTimeout(mTimer); mTimer = 0; } }
-      saveF(); saveP(); saveQ(); saveM(); saveKU();
+      if (kk === 'partyAccept') PARTY.on = !PARTY.on;
+      if (kk === 'partyInvite') PARTY_INV.on = !PARTY_INV.on;
+      if (kk === 'orb') UI3.orb = (UI3.orb === false);
+      saveF(); saveP(); saveQ(); saveM(); saveKU(); saveParty(); savePartyInv(); save('ui2', UI3);
       syncUI(); return;
     }
     var kuc = t.closest('[data-kk]');   // [3.10.0] chip đổi khu
@@ -1525,6 +1652,28 @@ setTimeout(function () {
     });
   });
 
+
+  /* Menu mới: cỡ bảng / cỡ chữ / vị trí / bật-dừng tất cả (không đụng các nút cũ) */
+  root.addEventListener('click', function (e) {
+    var t = e.target;
+    var ub = t.closest('[data-ui]');
+    if (ub) { UI3.scale = Math.max(70, Math.min(140, Number(ub.getAttribute('data-ui')) || 100)); uiCfgPaint(); uiCfgSave(); return; }
+    var fb = t.closest('[data-fs]');
+    if (fb) { UI3.fs = Math.max(10, Math.min(16, Number(fb.getAttribute('data-fs')) || 13)); uiCfgPaint(); uiCfgSave(); return; }
+    var ob = t.closest('[data-oa]');
+    if (ob) {
+      var k2 = ob.getAttribute('data-oa');
+      if (k2 === 'on') allSet(true);
+      else if (k2 === 'off') allSet(false);
+      else if (k2 === 'home') {
+        UI3.x = null; UI3.y = null;
+        root.style.left = 'auto'; root.style.top = 'auto'; root.style.right = '12px'; root.style.bottom = '76px';
+        clampPanel();
+      } else if (k2 === 'orbhome') { UI3.px = null; UI3.py = null; fitOrb(); }
+      uiCfgSave(); syncUI(); return;
+    }
+  });
+
   function openPanel() { root.classList.remove('hide'); UI3.open = true; page(UI3.tab); syncUI(); uiList(); clampPanel(); save('ui2', UI3); }
   function closePanel() { root.classList.add('hide'); UI3.open = false; save('ui2', UI3); }
 
@@ -1556,7 +1705,7 @@ setTimeout(function () {
       } else if (onTap) onTap();
     }
     handle.addEventListener('pointerdown', function (e) {
-      if (e.target.closest('[data-a],[data-on],.ch,.seg,input')) return;
+      if (e.target.closest('[data-a],[data-on],.ch,.seg,input,[data-oa],[data-ui],[data-fs]')) return;
       try { e.preventDefault(); e.stopPropagation(); } catch (er) {}
       var r = target.getBoundingClientRect();
       d = { x: e.clientX, y: e.clientY, l: r.left, t: r.top, mv: 0, id: e.pointerId };
@@ -1617,8 +1766,8 @@ setTimeout(function () {
     if (saved) { UI3 = Object.assign(UI3, saved); }
     // Bản cũ lưu open:true nên cứ vào game là tự mở; lần này tôn trọng trạng thái đã lưu, mặc định đóng.
     if (UI3.open === true) root.classList.remove('hide'); else root.classList.add('hide');
-    if (!UI3.tab || ['farm', 'pick', 'maint', 'map'].indexOf(UI3.tab) < 0) UI3.tab = 'farm';   // bo tab Boss/Toc do da luu
-    page(UI3.tab); syncUI(); uiList();
+    if (!tabExists(UI3.tab)) UI3.tab = 'ov';   // menu moi: tab cu (boss/toc do/...) khong con
+    page(UI3.tab); applyUiCfg(); syncUI(); uiList();
     if (!root.isConnected) document.body.appendChild(root);
     clampPanel();
     addEventListener('resize', clampPanel);
@@ -1649,7 +1798,7 @@ setTimeout(function () {
   A.khu = { cfg: KU, state: KS, tick: khuTick, got: khuGot, request: khuRequest, other: khuOther, danger: khuDanger,
             switchTo: khuSwitch, cur: khuCurCh, chs: khuChs, curN: khuCurN, text: function () { return KS.msg; },
             save: saveKU, consts: { DIFF: KHU_DIFF, BAD: KHU_BAD } };   // [3.10.0] đổi khu
-  A.ui = { page: page, open: openPanel, close: closePanel, sync: syncUI, list: uiList };
+  A.ui = { page: page, open: openPanel, close: closePanel, sync: syncUI, list: uiList, tabs: function () { return [].map.call(root.querySelectorAll('.seg button'), function (b) { return b.getAttribute('data-t'); }); }, show: function (tt) { if (tabExists(tt)) page(tt); }, cfg: uiCfgPaint, apply: applyUiCfg, all: allSet };
   A.pick = { cfg: P, ok: pOK, find: pFind, rank: rk, RANK: RANK, ai: PAI, counts: pCounts, step: pickStep, tick: tickP, collect: pCollect, foot: pFootBurst,
              sell: { cfg: Q, list: sellList, now: sellNow, price: sellPrice, tick: qTick, got: function () { return qGot; }, state: qS },
              risk: pDanger, foes: pFoeList, scan: pScan, aiOk: pAiOk, dropRisk: pDropRisk, tripMax: pTripMax,   // [3.12.0] AI nhặt an toàn
@@ -1657,6 +1806,97 @@ setTimeout(function () {
   A.maps = { table: GAMEMAPS, noTp: NO_TP, bad: TPBAD, cand: tpCand, ok: tpOk, minLv: tpMinLv,
              name: mapName, serves: tpServes, pick: tpPick, render: uiMaps };   // QA: bảng bản đồ + Xa Phu
   console.log('[VLA3] Võ Lâm Auto 3 - Member 3.13.0 đã tải');
+
+  /* ============ 3C. TO DOI: TU NHAN LOI MOI + TU MOI NGUOI KHAC ============ */
+  /* API that cua game (js/party09a3.js):
+       G.socket.on('partyReq', d)        -> co nguoi moi vao doi (d = {name, cls, level, n})
+       G.socket.emit('party', {op:'accept'})  -> vao doi
+       window.Party.data / Party.has(id) / Party.invite(entity)
+     - Tu nhan: nghe thang socket partyReq + quet modal du phong moi 1,5s.
+     - Tu moi: chi khi dang la doi truong va doi chua du 6 nguoi. */
+  function savePartyInv() { save('partyInv', { on: PARTY_INV.on, r: PARTY_INV.r, cool: PARTY_INV.cool, gap: PARTY_INV.gap }); }
+
+  var _pSock = null, _pReq = null, _pCool = {}, _pLastInv = 0, _pBudget = [];
+
+  function partyModalBtn() {
+    var box = document.getElementById('modal-msg');
+    if (!box || box.classList.contains('hidden')) return null;
+    var txt = norm(box.textContent);
+    if (txt.indexOf('vao to doi') < 0 && txt.indexOf('moi ban vao to doi') < 0 && txt.indexOf('moi to doi') < 0) return null;
+    var btns = box.querySelectorAll('#modal-btns button, button');
+    for (var i = 0; i < btns.length; i++) {
+      var t = norm(btns[i].textContent);
+      if (t === 'vao doi' || t.indexOf('vao doi') === 0 || t === 'dong y' || t.indexOf('dong y') === 0 ||
+          t === 'chap nhan' || t.indexOf('chap nhan') === 0 || t === 'accept' || t.indexOf('tham gia') === 0) return btns[i];
+    }
+    return null;
+  }
+
+  function partyAccept(sock, tries) {
+    var b = partyModalBtn();
+    if (b) { try { b.click(); } catch (e) {} return true; }
+    if ((tries || 0) >= 5) return false;
+    setTimeout(function () { try { partyAccept(sock, (tries || 0) + 1); } catch (e) {} }, 220);
+    return false;
+  }
+
+  function partyBind(sock) {
+    if (!sock || _pSock === sock) return;
+    try { if (_pSock && _pReq && _pSock.off) _pSock.off('partyReq', _pReq); } catch (e) {}
+    _pSock = sock;
+    _pReq = function (d) {
+      try {
+        if (!PARTY.on || !d) return;
+        if (window.Social && Social.blocked && Social.blocked(d.name)) return;   // ton trong danh sach chan
+        setTimeout(function () { try { partyAccept(sock, 0); } catch (e) {} }, 90);
+      } catch (e) {}
+    };
+    try { sock.on('partyReq', _pReq); } catch (e) {}
+  }
+
+  function partyState() { try { return (window.Party && Party.data) || null; } catch (e) { return null; } }
+  function partyLeaderMe() { var p = partyState(); return !!(p && p.you != null && p.leader === p.you); }
+  function partyCount() { var p = partyState(); return (p && p.members && p.members.length) || 0; }
+
+  function partyTick() {
+    var g = G();
+    if (!g || !g.socket || !inGame()) return;
+    partyBind(g.socket);
+    if (PARTY.on) { try { partyAccept(g.socket, 1); } catch (e) {} }   // du phong: modal dang mo
+    if (!PARTY_INV.on) return;
+    if (!partyLeaderMe() || partyCount() >= 6) return;
+    var t = now();
+    if (t - _pLastInv < PARTY_INV.gap) return;
+    _pBudget = _pBudget.filter(function (x) { return t - x < 60000; });
+    if (_pBudget.length >= 12) return;   // toi da 12 loi moi / phut
+    var s = g.self; if (!s) return;
+    var best = null, bd = 1e9;
+    try {
+      g.players.forEach(function (p, id) {
+        if (id === g.you || !p || p.dead || p.pm === 2 || !p.name) return;   // bo qua Dồ sát / chet / khong ten
+        if (window.Party && Party.has && Party.has(id)) return;             // da trong doi
+        var d = Math.hypot(p.x - s.x, p.y - s.y);
+        if (d > PARTY_INV.r || d >= bd) return;
+        if (_pCool[id] && t - _pCool[id] < PARTY_INV.cool) return;
+        bd = d; best = p;
+      });
+    } catch (e) { return; }
+    if (!best) return;
+    try { window.Party.invite(best); } catch (e) { return; }
+    _pCool[best.id] = t; _pLastInv = t; _pBudget.push(t);
+    try { setSt('t', '🤝 đã mời ' + best.name + ' vào tổ đội'); } catch (e) {}
+    try { console.log('[VLA3] mời tổ đội:', best.name, 'id', best.id); } catch (e) {}
+  }
+
+  try { if (window.__VLA3_PARTY_OBS) { window.__VLA3_PARTY_OBS.disconnect(); window.__VLA3_PARTY_OBS = null; } } catch (e) {}
+  every(1500, partyTick, '[VLA3-party]');
+  A.party = { acceptCfg: PARTY, cfg: PARTY_INV, save: savePartyInv, tick: partyTick, bind: partyBind, accept: partyAccept,
+              leader: partyLeaderMe, count: partyCount, state: partyState };
+  var _pOldDestroy = A.destroy;
+  A.destroy = function () {
+    try { if (_pSock && _pReq && _pSock.off) _pSock.off('partyReq', _pReq); } catch (e) {}
+    try { _pOldDestroy(); } catch (e) {}
+  };
 })();
 }, 800);
 
